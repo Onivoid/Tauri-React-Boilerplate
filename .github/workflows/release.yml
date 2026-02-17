@@ -114,9 +114,9 @@ jobs:
                         ];
                       }
 
-                      const { create } = require('@actions/glob');
+                      const glob = require('@actions/glob');
                       for (const pattern of artifactPaths) {
-                        const globber = await create(pattern);
+                        const globber = await glob.create(pattern);
                         const files = await globber.glob();
                         
                         for (const file of files) {
