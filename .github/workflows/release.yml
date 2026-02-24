@@ -61,7 +61,7 @@ jobs:
             - name: Install frontend dependencies
               run: pnpm install --frozen-lockfile
 
-            - name: Build and release
+            - name: Build
               uses: tauri-apps/tauri-action@v0
               env:
                   GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -71,30 +71,71 @@ jobs:
                   tagName: ${{ github.ref_name }}
                   releaseName: "Release ${{ github.ref_name }}"
                   releaseBody: "See CHANGELOG.md for details"
-                  releaseDraft: false
+                  releaseDraft: true
                   prerelease: false
-                  includeUpdaterJson: true
-                  updaterJsonPreferNsis: true
                   args: ${{ matrix.platform.args }}
 
-            - name: Upload updater signatures
-              shell: bash
+            - name: Upload updater artifacts (Linux)
+              if: matrix.platform.os == 'ubuntu-22.04'
+              uses: softprops/action-gh-release@v2
+              with:
+                  draft: true
+                  files: |
+                      src-tauri/target/release/bundle/appimage/*.AppImage
+                      src-tauri/target/release/bundle/appimage/*.AppImage.tar.gz
+                      src-tauri/target/release/bundle/appimage/*.AppImage.tar.gz.sig
+                      src-tauri/target/release/bundle/deb/*.deb
+                      src-tauri/target/release/bundle/rpm/*.rpm
+
+            - name: Upload updater artifacts (macOS)
+              if: matrix.platform.os == 'macos-latest'
+              uses: softprops/action-gh-release@v2
+              with:
+                  draft: true
+                  files: |
+                      src-tauri/target/universal-apple-darwin/release/bundle/dmg/*.dmg
+                      src-tauri/target/universal-apple-darwin/release/bundle/macos/*.app.tar.gz
+                      src-tauri/target/universal-apple-darwin/release/bundle/macos/*.app.tar.gz.sig
+
+            - name: Upload updater artifacts (Windows)
+              if: matrix.platform.os == 'windows-latest'
+              uses: softprops/action-gh-release@v2
+              with:
+                  draft: true
+                  files: |
+                      src-tauri/target/release/bundle/nsis/*-setup.exe
+                      src-tauri/target/release/bundle/nsis/*.nsis.zip
+                      src-tauri/target/release/bundle/nsis/*.nsis.zip.sig
+                      src-tauri/target/release/bundle/msi/*.msi
+                      src-tauri/target/release/bundle/msi/*.msi.zip
+                      src-tauri/target/release/bundle/msi/*.msi.zip.sig
+
+    publish-release:
+        name: Publish Release
+        needs: build-and-release
+        runs-on: ubuntu-latest
+        steps:
+            - uses: actions/checkout@v4
+
+            - name: Setup pnpm
+              uses: pnpm/action-setup@v4
+
+            - name: Setup Node.js
+              uses: actions/setup-node@v4
+              with:
+                  node-version: lts/*
+                  cache: pnpm
+
+            - name: Install frontend dependencies
+              run: pnpm install --frozen-lockfile
+
+            - name: Generate and upload latest.json
               env:
                   GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-              run: |
-                  files=$(find src-tauri/target -type f \( \
-                    -name "*.sig" \
-                    -o -name "*.AppImage.tar.gz" \
-                    -o -name "*.app.tar.gz" \
-                    -o -name "*.nsis.zip" \
-                    -o -name "*.msi.zip" \
-                  \) 2>/dev/null || true)
+              run: node scripts/updater.mjs ${{ github.ref_name }}
 
-                  if [ -z "$files" ]; then
-                    echo "No updater assets found, skipping."
-                    exit 0
-                  fi
-
-                  echo "Uploading:"
-                  echo "$files"
-                  echo "$files" | xargs gh release upload "${{ github.ref_name }}" --clobber
+            - name: Publish release
+              uses: softprops/action-gh-release@v2
+              with:
+                  draft: false
+                  prerelease: false
