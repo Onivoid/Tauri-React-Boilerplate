@@ -21,6 +21,7 @@ A modern, production-ready boilerplate for building desktop applications with Ta
 - 🪟 **Window Control** - Complete API (minimize, maximize, close)
 - 📦 **Composables** - Reusable hooks (Nuxt-style)
 - 🌍 **i18n** - Internationalization with English & French
+- 🔄 **Auto-Updates** - Built-in automatic update system with signed releases
 
 ## 📁 Project Structure
 
@@ -101,6 +102,65 @@ pnpm tauri dev    # Run Tauri app in dev mode
 pnpm tauri build  # Build app for production
 ```
 
+## 🔄 Auto-Update System
+
+This boilerplate includes a fully configured automatic update system using Tauri's updater plugin.
+
+### How it works
+
+1. **Check for updates**: The app automatically checks for new versions on startup
+2. **User notification**: A notification appears in the bottom-right corner when an update is available
+3. **Download & Install**: Users can install updates with one click
+4. **Signed releases**: All updates are cryptographically signed for security
+
+### Configuration
+
+The updater is configured in `src-tauri/tauri.conf.json`:
+
+```json
+{
+    "plugins": {
+        "updater": {
+            "pubkey": "YOUR_PUBLIC_KEY",
+            "endpoints": [
+                "https://github.com/{{owner}}/{{repo}}/releases/latest/download/latest.json"
+            ]
+        }
+    }
+}
+```
+
+### Setting up for your project
+
+1. **Generate signing keys** (already done for this boilerplate):
+
+    ```bash
+    pnpm tauri signer generate -w ~/.tauri/myapp.key
+    ```
+
+2. **Add secrets to GitHub**:
+    - `TAURI_SIGNING_PRIVATE_KEY`: Content of `~/.tauri/myapp.key`
+    - `TAURI_SIGNING_PRIVATE_KEY_PASSWORD`: Password you set during key generation
+
+3. **Update the public key** in `src-tauri/tauri.conf.json`:
+
+    ```bash
+    cat ~/.tauri/myapp.key.pub
+    ```
+
+4. **Customize the endpoint** in `tauri.conf.json` with your GitHub repo
+
+### Release workflow
+
+The CI automatically:
+
+- Builds for macOS (ARM + Intel), Linux, and Windows
+- Signs all binaries with your private key
+- Generates `latest.json` with update metadata
+- Publishes the release to GitHub
+
+Users will automatically receive update notifications when you push a new version tag.
+
 ## 🎨 Customization
 
 ### Add a new page
@@ -134,7 +194,7 @@ pnpm tauri build  # Build app for production
 - **Routing**: React Router v7 (MemoryRouter)
 - **i18n**: react-i18next
 - **Backend**: Rust, Tauri v2
-- **Plugins**: Notification
+- **Plugins**: Updater, Process, Notification, Opener
 
 ## 📝 Best Practices
 

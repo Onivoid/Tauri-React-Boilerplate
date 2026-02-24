@@ -26,6 +26,11 @@ export default function Home() {
           <Button>{t("home.viewExamples")}</Button>
         </Link>
       </div>
+      <div className="mt-4">
+        <Link to="/updater-test">
+          <Button variant="secondary" size="sm">Test Updater UI</Button>
+        </Link>
+      </div>
     </div>
   );
 }
