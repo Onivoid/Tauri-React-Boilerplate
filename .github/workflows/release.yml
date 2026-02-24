@@ -74,6 +74,4 @@ jobs:
                   releaseDraft: false
                   prerelease: false
                   updaterJsonPreferNsis: true
-                  uploadUpdaterSignatures: true
-                  uploadUpdaterJson: true
                   args: ${{ matrix.platform.args }}
