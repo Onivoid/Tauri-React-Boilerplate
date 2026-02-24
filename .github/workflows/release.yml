@@ -62,7 +62,7 @@ jobs:
               run: pnpm install --frozen-lockfile
 
             - name: Build and release
-              uses: tauri-apps/tauri-action@44a5bf1eaeeebdabfd8951645f567c83b0ae02a3
+              uses: tauri-apps/tauri-action@v0
               env:
                   GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
                   TAURI_SIGNING_PRIVATE_KEY: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY }}
@@ -73,7 +73,28 @@ jobs:
                   releaseBody: "See CHANGELOG.md for details"
                   releaseDraft: false
                   prerelease: false
+                  includeUpdaterJson: true
                   updaterJsonPreferNsis: true
-                  uploadUpdaterSignatures: true
-                  uploadUpdaterJson: true
                   args: ${{ matrix.platform.args }}
+
+            - name: Upload updater signatures
+              shell: bash
+              env:
+                  GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+              run: |
+                  files=$(find src-tauri/target -type f \( \
+                    -name "*.sig" \
+                    -o -name "*.AppImage.tar.gz" \
+                    -o -name "*.app.tar.gz" \
+                    -o -name "*.nsis.zip" \
+                    -o -name "*.msi.zip" \
+                  \) 2>/dev/null || true)
+
+                  if [ -z "$files" ]; then
+                    echo "No updater assets found, skipping."
+                    exit 0
+                  fi
+
+                  echo "Uploading:"
+                  echo "$files"
+                  echo "$files" | xargs gh release upload "${{ github.ref_name }}" --clobber
