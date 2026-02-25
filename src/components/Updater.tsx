@@ -1,51 +1,44 @@
-import { useEffect, useState } from "react";
-import { check } from "@tauri-apps/plugin-updater";
+import { useEffect, useRef, useState } from "react";
+import { check, Update } from "@tauri-apps/plugin-updater";
 import { relaunch } from "@tauri-apps/plugin-process";
 import { Button } from "./ui/button";
 import { useTranslation } from "react-i18next";
 
 export function Updater() {
     const { t } = useTranslation();
-    const [updateAvailable, setUpdateAvailable] = useState(false);
-    const [updateVersion, setUpdateVersion] = useState("");
+    const [update, setUpdate] = useState<Update | null>(null);
     const [downloading, setDownloading] = useState(false);
     const [downloadProgress, setDownloadProgress] = useState(0);
+    const [dismissed, setDismissed] = useState(false);
+    const totalSize = useRef<number>(0);
+    const downloaded = useRef<number>(0);
 
     useEffect(() => {
-        checkForUpdates();
+        check()
+            .then((u) => { if (u?.available) setUpdate(u); })
+            .catch((err) => console.error("Update check failed:", err));
     }, []);
 
-    async function checkForUpdates() {
-        try {
-            const update = await check();
-            if (update?.available) {
-                setUpdateAvailable(true);
-                setUpdateVersion(update.version);
-            }
-        } catch (error) {
-            console.error("Failed to check for updates:", error);
-        }
-    }
-
     async function downloadAndInstall() {
+        if (!update) return;
         try {
             setDownloading(true);
-            const update = await check();
-
-            if (!update?.available) {
-                setDownloading(false);
-                return;
-            }
+            downloaded.current = 0;
+            totalSize.current = 0;
 
             await update.downloadAndInstall((event) => {
                 switch (event.event) {
                     case "Started":
+                        totalSize.current = event.data.contentLength ?? 0;
                         setDownloadProgress(0);
                         break;
                     case "Progress":
-                        setDownloadProgress(
-                            Math.round((event.data.chunkLength / 1024) * 100)
-                        );
+                        downloaded.current += event.data.chunkLength;
+                        if (totalSize.current > 0) {
+                            setDownloadProgress(
+                                Math.min(99, Math.round((downloaded.current / totalSize.current) * 100))
+                            );
+                        }
                         break;
                     case "Finished":
                         setDownloadProgress(100);
@@ -60,19 +53,19 @@ export function Updater() {
         }
     }
 
-    if (!updateAvailable) {
+    if (!update?.available || dismissed) {
         return null;
     }
 
     return (
-        <div className="fixed bottom-4 right-4 bg-background border rounded-lg shadow-lg p-4 max-w-sm">
+        <div className="fixed bottom-4 right-4 bg-background border rounded-lg shadow-lg p-4 max-w-sm z-50">
             <div className="flex flex-col gap-3">
                 <div>
                     <h3 className="font-semibold text-sm">
                         {t("updater.title", "Update Available")}
                     </h3>
                     <p className="text-xs text-muted-foreground">
-                        {t("updater.version", `Version ${updateVersion} is available`)}
+                        {t("updater.version", `Version ${update.version} is available`)}
                     </p>
                 </div>
 
@@ -102,7 +95,7 @@ export function Updater() {
                             : t("updater.install", "Install")}
                     </Button>
                     <Button
-                        onClick={() => setUpdateAvailable(false)}
+                        onClick={() => setDismissed(true)}
                         disabled={downloading}
                         variant="outline"
                         size="sm"

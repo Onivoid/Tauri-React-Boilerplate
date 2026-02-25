@@ -4,7 +4,6 @@ import Home from "@/pages/Home";
 import About from "@/pages/About";
 import Settings from "@/pages/Settings";
 import Examples from "@/pages/Examples";
-import UpdaterTest from "@/pages/UpdaterTest";
 import NotFound from "@/pages/NotFound";
 
 export const router = createMemoryRouter([
@@ -27,10 +26,6 @@ export const router = createMemoryRouter([
       {
         path: "examples",
         element: <Examples />,
-      },
-      {
-        path: "updater-test",
-        element: <UpdaterTest />,
       },
       {
         path: "*",

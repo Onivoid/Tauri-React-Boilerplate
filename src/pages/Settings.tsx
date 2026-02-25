@@ -1,14 +1,21 @@
+import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Link } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { ArrowLeft, Sun, Moon, Monitor, Languages } from "lucide-react";
 import { useTheme, useLanguage } from "@/composables";
 import { ROUTES } from "@/constants";
+import { getVersion } from "@tauri-apps/api/app";
 
 export default function Settings() {
   const { t } = useTranslation();
   const { theme, setTheme } = useTheme();
   const { currentLanguage, changeLanguage } = useLanguage();
+  const [appVersion, setAppVersion] = useState<string>("");
+
+  useEffect(() => {
+    getVersion().then(setAppVersion).catch(() => { });
+  }, []);
 
   return (
     <div className="flex flex-col items-center justify-center min-h-screen gap-6 p-8">
@@ -80,6 +87,10 @@ export default function Settings() {
           </div>
         </div>
       </div>
+
+      {appVersion && (
+        <p className="text-xs text-muted-foreground">v{appVersion}</p>
+      )}
 
       <Link to={ROUTES.HOME}>
         <Button variant="outline">
