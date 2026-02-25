@@ -61,25 +61,41 @@ jobs:
             - name: Install frontend dependencies
               run: pnpm install --frozen-lockfile
 
-            - name: Build
-              uses: tauri-apps/tauri-action@v0
+            - name: Build (macOS universal)
+              if: matrix.platform.os == 'macos-latest'
               env:
-                  GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
                   TAURI_SIGNING_PRIVATE_KEY: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY }}
                   TAURI_SIGNING_PRIVATE_KEY_PASSWORD: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY_PASSWORD }}
-              with:
-                  tagName: ${{ github.ref_name }}
-                  releaseName: "Release ${{ github.ref_name }}"
-                  releaseBody: "See CHANGELOG.md for details"
-                  releaseDraft: true
-                  prerelease: false
-                  args: ${{ matrix.platform.args }}
+              run: pnpm tauri build --target universal-apple-darwin
 
-            - name: Upload updater artifacts (Linux)
+            - name: Build (Linux / Windows)
+              if: matrix.platform.os != 'macos-latest'
+              env:
+                  TAURI_SIGNING_PRIVATE_KEY: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY }}
+                  TAURI_SIGNING_PRIVATE_KEY_PASSWORD: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY_PASSWORD }}
+              run: pnpm tauri build ${{ matrix.platform.args }}
+
+            - name: Upload artifacts (macOS)
+              if: matrix.platform.os == 'macos-latest'
+              uses: softprops/action-gh-release@v2
+              with:
+                  name: "Release ${{ github.ref_name }}"
+                  body: "See CHANGELOG.md for details"
+                  draft: true
+                  prerelease: false
+                  files: |
+                      src-tauri/target/universal-apple-darwin/release/bundle/dmg/*.dmg
+                      src-tauri/target/universal-apple-darwin/release/bundle/macos/*.app.tar.gz
+                      src-tauri/target/universal-apple-darwin/release/bundle/macos/*.app.tar.gz.sig
+
+            - name: Upload artifacts (Linux)
               if: matrix.platform.os == 'ubuntu-22.04'
               uses: softprops/action-gh-release@v2
               with:
+                  name: "Release ${{ github.ref_name }}"
+                  body: "See CHANGELOG.md for details"
                   draft: true
+                  prerelease: false
                   files: |
                       src-tauri/target/release/bundle/appimage/*.AppImage
                       src-tauri/target/release/bundle/appimage/*.AppImage.tar.gz
@@ -87,25 +103,18 @@ jobs:
                       src-tauri/target/release/bundle/deb/*.deb
                       src-tauri/target/release/bundle/rpm/*.rpm
 
-            - name: Upload updater artifacts (macOS)
-              if: matrix.platform.os == 'macos-latest'
-              uses: softprops/action-gh-release@v2
-              with:
-                  draft: true
-                  files: |
-                      src-tauri/target/universal-apple-darwin/release/bundle/dmg/*.dmg
-                      src-tauri/target/universal-apple-darwin/release/bundle/macos/*.app.tar.gz
-                      src-tauri/target/universal-apple-darwin/release/bundle/macos/*.app.tar.gz.sig
-
-            - name: Upload updater artifacts (Windows)
+            - name: Upload artifacts (Windows)
               if: matrix.platform.os == 'windows-latest'
               uses: softprops/action-gh-release@v2
               with:
+                  name: "Release ${{ github.ref_name }}"
+                  body: "See CHANGELOG.md for details"
                   draft: true
+                  prerelease: false
                   files: |
                       src-tauri/target/release/bundle/nsis/*-setup.exe
-                      src-tauri/target/release/bundle/nsis/*.nsis.zip
-                      src-tauri/target/release/bundle/nsis/*.nsis.zip.sig
+                      src-tauri/target/release/bundle/nsis/*-setup.nsis.zip
+                      src-tauri/target/release/bundle/nsis/*-setup.nsis.zip.sig
                       src-tauri/target/release/bundle/msi/*.msi
                       src-tauri/target/release/bundle/msi/*.msi.zip
                       src-tauri/target/release/bundle/msi/*.msi.zip.sig
@@ -117,17 +126,10 @@ jobs:
         steps:
             - uses: actions/checkout@v4
 
-            - name: Setup pnpm
-              uses: pnpm/action-setup@v4
-
             - name: Setup Node.js
               uses: actions/setup-node@v4
               with:
                   node-version: lts/*
-                  cache: pnpm
-
-            - name: Install frontend dependencies
-              run: pnpm install --frozen-lockfile
 
             - name: Generate and upload latest.json
               env:
