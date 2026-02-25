@@ -168,7 +168,7 @@ async function main() {
     }
 
     const latestJson = {
-        version: `v${version}`,
+        version: version,
         notes: `See CHANGELOG.md for details`,
         pub_date: new Date().toISOString(),
         platforms,
