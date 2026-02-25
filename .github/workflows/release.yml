@@ -9,8 +9,27 @@ permissions:
     contents: write
 
 jobs:
+    create-release:
+        name: Create Release
+        runs-on: ubuntu-latest
+        outputs:
+            release_id: ${{ steps.create.outputs.id }}
+        steps:
+            - uses: actions/checkout@v4
+
+            - name: Create draft release
+              id: create
+              uses: softprops/action-gh-release@v2
+              with:
+                  tag_name: ${{ github.ref_name }}
+                  name: "Release ${{ github.ref_name }}"
+                  body: "See CHANGELOG.md for details"
+                  draft: true
+                  prerelease: false
+
     build-and-release:
         name: Build (${{ matrix.platform.name }})
+        needs: create-release
         strategy:
             fail-fast: false
             matrix:
@@ -80,10 +99,6 @@ jobs:
               uses: softprops/action-gh-release@v2
               with:
                   tag_name: ${{ github.ref_name }}
-                  name: "Release ${{ github.ref_name }}"
-                  body: "See CHANGELOG.md for details"
-                  draft: true
-                  prerelease: false
                   files: |
                       src-tauri/target/universal-apple-darwin/release/bundle/dmg/*.dmg
                       src-tauri/target/universal-apple-darwin/release/bundle/macos/*.app.tar.gz
@@ -94,10 +109,6 @@ jobs:
               uses: softprops/action-gh-release@v2
               with:
                   tag_name: ${{ github.ref_name }}
-                  name: "Release ${{ github.ref_name }}"
-                  body: "See CHANGELOG.md for details"
-                  draft: true
-                  prerelease: false
                   files: |
                       src-tauri/target/release/bundle/appimage/*.AppImage
                       src-tauri/target/release/bundle/appimage/*.AppImage.sig
@@ -109,10 +120,6 @@ jobs:
               uses: softprops/action-gh-release@v2
               with:
                   tag_name: ${{ github.ref_name }}
-                  name: "Release ${{ github.ref_name }}"
-                  body: "See CHANGELOG.md for details"
-                  draft: true
-                  prerelease: false
                   files: |
                       src-tauri/target/release/bundle/nsis/*-setup.exe
                       src-tauri/target/release/bundle/nsis/*-setup.exe.sig
