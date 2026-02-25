@@ -6,6 +6,7 @@ export const ROUTES = {
     ABOUT: "/about",
     SETTINGS: "/settings",
     EXAMPLES: "/examples",
+    UPDATE: "/update",
 } as const;
 
 export const STORAGE_KEYS = {

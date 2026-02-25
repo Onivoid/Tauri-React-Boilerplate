@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Link } from "react-router-dom";
 import { useTranslation } from "react-i18next";
-import { ArrowLeft, Sun, Moon, Monitor, Languages } from "lucide-react";
+import { ArrowLeft, Sun, Moon, Monitor, Languages, RefreshCw } from "lucide-react";
 import { useTheme, useLanguage } from "@/composables";
 import { ROUTES } from "@/constants";
 import { getVersion } from "@tauri-apps/api/app";
@@ -88,9 +88,22 @@ export default function Settings() {
         </div>
       </div>
 
-      {appVersion && (
-        <p className="text-xs text-muted-foreground">v{appVersion}</p>
-      )}
+      <div className="w-full max-w-md">
+        <div className="border rounded-lg p-6">
+          <h2 className="text-xl font-semibold mb-2">{t("settings.updates.title", "Updates")}</h2>
+          {appVersion && (
+            <p className="text-sm text-muted-foreground mb-4">
+              {t("settings.updates.currentVersion", "Current version")}: v{appVersion}
+            </p>
+          )}
+          <Link to={ROUTES.UPDATE}>
+            <Button variant="outline" size="sm">
+              <RefreshCw className="mr-2 h-4 w-4" />
+              {t("settings.updates.check", "Check for updates")}
+            </Button>
+          </Link>
+        </div>
+      </div>
 
       <Link to={ROUTES.HOME}>
         <Button variant="outline">
