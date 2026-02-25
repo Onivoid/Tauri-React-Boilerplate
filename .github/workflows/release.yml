@@ -98,8 +98,7 @@ jobs:
                   prerelease: false
                   files: |
                       src-tauri/target/release/bundle/appimage/*.AppImage
-                      src-tauri/target/release/bundle/appimage/*.AppImage.tar.gz
-                      src-tauri/target/release/bundle/appimage/*.AppImage.tar.gz.sig
+                      src-tauri/target/release/bundle/appimage/*.AppImage.sig
                       src-tauri/target/release/bundle/deb/*.deb
                       src-tauri/target/release/bundle/rpm/*.rpm
 
@@ -113,11 +112,9 @@ jobs:
                   prerelease: false
                   files: |
                       src-tauri/target/release/bundle/nsis/*-setup.exe
-                      src-tauri/target/release/bundle/nsis/*-setup.nsis.zip
-                      src-tauri/target/release/bundle/nsis/*-setup.nsis.zip.sig
+                      src-tauri/target/release/bundle/nsis/*-setup.exe.sig
                       src-tauri/target/release/bundle/msi/*.msi
-                      src-tauri/target/release/bundle/msi/*.msi.zip
-                      src-tauri/target/release/bundle/msi/*.msi.zip.sig
+                      src-tauri/target/release/bundle/msi/*.msi.sig
 
     publish-release:
         name: Publish Release

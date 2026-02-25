@@ -129,23 +129,19 @@ async function main() {
         const signature = await getAssetContent(asset);
         const downloadUrl = archiveAsset.browser_download_url;
 
-        if (name.includes(".AppImage.tar.gz.sig")) {
+        if (name.endsWith(".AppImage.sig")) {
             console.log(`  Linux x86_64: ${archiveName}`);
             platforms["linux-x86_64"] = {
                 signature: signature.trim(),
                 url: downloadUrl,
             };
-        } else if (name.includes(".app.tar.gz.sig")) {
-            const isUniversal =
-                name.toLowerCase().includes("universal") ||
-                !name.toLowerCase().includes("x86_64");
-            const key = isUniversal ? "darwin-universal" : "darwin-x86_64";
-            console.log(`  macOS ${key}: ${archiveName}`);
-            platforms[key] = {
+        } else if (name.endsWith(".app.tar.gz.sig")) {
+            console.log(`  macOS universal: ${archiveName}`);
+            platforms["darwin-universal"] = {
                 signature: signature.trim(),
                 url: downloadUrl,
             };
-        } else if (name.includes(".nsis.zip.sig")) {
+        } else if (name.endsWith("-setup.exe.sig")) {
             const arch = name.toLowerCase().includes("aarch64") ? "aarch64" : "x86_64";
             const key = `windows-${arch}`;
             console.log(`  Windows NSIS ${key}: ${archiveName}`);
@@ -153,7 +149,7 @@ async function main() {
                 signature: signature.trim(),
                 url: downloadUrl,
             };
-        } else if (name.includes(".msi.zip.sig")) {
+        } else if (name.endsWith(".msi.sig")) {
             const arch = name.toLowerCase().includes("aarch64") ? "aarch64" : "x86_64";
             const key = `windows-${arch}`;
             if (!platforms[key]) {
