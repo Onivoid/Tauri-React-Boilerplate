@@ -6,10 +6,12 @@ import { Button } from "@/components/ui/button";
 import { Link } from "react-router-dom";
 import { ArrowLeft, RefreshCw, Download, CheckCircle, XCircle, AlertCircle } from "lucide-react";
 import { ROUTES } from "@/constants";
+import { useTranslation } from "react-i18next";
 
 type CheckStatus = "idle" | "checking" | "available" | "up-to-date" | "error";
 
 export default function UpdatePage() {
+    const { t } = useTranslation();
     const [status, setStatus] = useState<CheckStatus>("idle");
     const [update, setUpdate] = useState<Update | null>(null);
     const [currentVersion, setCurrentVersion] = useState<string>("");
@@ -20,7 +22,7 @@ export default function UpdatePage() {
     const downloaded = useRef<number>(0);
 
     useEffect(() => {
-        getVersion().then(setCurrentVersion).catch(() => {});
+        getVersion().then(setCurrentVersion).catch(() => { });
         runCheck();
     }, []);
 
@@ -79,12 +81,12 @@ export default function UpdatePage() {
 
     return (
         <div className="flex flex-col items-center justify-center min-h-screen gap-6 p-8">
-            <h1 className="text-4xl font-bold">Updates</h1>
+            <h1 className="text-4xl font-bold">{t("update.title")}</h1>
 
             <div className="w-full max-w-md space-y-4">
                 <div className="border rounded-lg p-6 space-y-4">
                     <div className="flex items-center justify-between">
-                        <span className="text-sm text-muted-foreground">Current version</span>
+                        <span className="text-sm text-muted-foreground">{t("update.currentVersion")}</span>
                         <span className="font-mono text-sm font-semibold">
                             {currentVersion ? `v${currentVersion}` : "—"}
                         </span>
@@ -92,7 +94,7 @@ export default function UpdatePage() {
 
                     {status === "available" && update && (
                         <div className="flex items-center justify-between">
-                            <span className="text-sm text-muted-foreground">Available version</span>
+                            <span className="text-sm text-muted-foreground">{t("update.availableVersion")}</span>
                             <span className="font-mono text-sm font-semibold text-primary">
                                 {update.version}
                             </span>
@@ -101,20 +103,20 @@ export default function UpdatePage() {
 
                     <div className="border-t pt-4">
                         {status === "idle" && (
-                            <p className="text-sm text-muted-foreground">Click check to look for updates.</p>
+                            <p className="text-sm text-muted-foreground">{t("update.checkButton")}</p>
                         )}
 
                         {status === "checking" && (
                             <div className="flex items-center gap-2 text-sm text-muted-foreground">
                                 <RefreshCw className="h-4 w-4 animate-spin" />
-                                Checking for updates...
+                                {t("update.checking")}
                             </div>
                         )}
 
                         {status === "up-to-date" && (
                             <div className="flex items-center gap-2 text-sm text-green-600">
                                 <CheckCircle className="h-4 w-4" />
-                                You are up to date.
+                                {t("update.upToDate")}
                             </div>
                         )}
 
@@ -122,7 +124,7 @@ export default function UpdatePage() {
                             <div className="space-y-3">
                                 <div className="flex items-center gap-2 text-sm text-primary">
                                     <AlertCircle className="h-4 w-4" />
-                                    Update available: {update.version}
+                                    {t("update.available")}: {update.version}
                                 </div>
                                 {update.body && (
                                     <p className="text-xs text-muted-foreground bg-muted rounded p-2 whitespace-pre-wrap">
@@ -136,7 +138,7 @@ export default function UpdatePage() {
                             <div className="space-y-2">
                                 <div className="flex items-center gap-2 text-sm text-destructive">
                                     <XCircle className="h-4 w-4" />
-                                    Check failed
+                                    {t("update.checkFailed")}
                                 </div>
                                 {error && (
                                     <p className="text-xs font-mono text-destructive bg-destructive/10 rounded p-2 break-all">
@@ -156,7 +158,7 @@ export default function UpdatePage() {
                                 />
                             </div>
                             <p className="text-xs text-muted-foreground text-center">
-                                Downloading... {downloadProgress}%
+                                {t("update.downloading")} {downloadProgress}%
                             </p>
                         </div>
                     )}
@@ -169,7 +171,7 @@ export default function UpdatePage() {
                                 className="flex-1"
                             >
                                 <Download className="mr-2 h-4 w-4" />
-                                {downloading ? "Installing..." : "Install Update"}
+                                {downloading ? t("update.installing") : t("update.installButton")}
                             </Button>
                         ) : (
                             <Button
@@ -179,7 +181,7 @@ export default function UpdatePage() {
                                 className="flex-1"
                             >
                                 <RefreshCw className={`mr-2 h-4 w-4 ${status === "checking" ? "animate-spin" : ""}`} />
-                                Check for updates
+                                {t("update.checkButton")}
                             </Button>
                         )}
                     </div>
@@ -189,7 +191,7 @@ export default function UpdatePage() {
             <Link to={ROUTES.SETTINGS}>
                 <Button variant="outline">
                     <ArrowLeft className="mr-2 h-4 w-4" />
-                    Back
+                    {t("common.back")}
                 </Button>
             </Link>
         </div>

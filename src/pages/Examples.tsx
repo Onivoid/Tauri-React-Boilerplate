@@ -8,7 +8,7 @@ import { ROUTES } from "@/constants";
 interface SystemInfo {
   os: string;
   arch: string;
-  version: string;
+  family: string;
 }
 
 export default function Examples() {
@@ -85,7 +85,7 @@ export default function Examples() {
             <div className="text-xs space-y-1">
               <p><strong>{t("examples.system.os")}:</strong> {systemInfo.os}</p>
               <p><strong>{t("examples.system.arch")}:</strong> {systemInfo.arch}</p>
-              <p><strong>{t("examples.system.family")}:</strong> {systemInfo.version}</p>
+              <p><strong>{t("examples.system.family")}:</strong> {systemInfo.family}</p>
             </div>
           )}
         </div>
